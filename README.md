@@ -1,6 +1,6 @@
 # EquivariantSelfAttention
 An implementation of Equivariant e2 convolutional kernals into a convolutional self attention network, applied to radio astronomy data.
-
+This branch include the development of the Fisher Analysis of the network.
 
 This work extends and builds on previous work:
  - [FR Classification using e2cnn](https://arxiv.org/pdf/2102.08252.pdf), whose code is [here](https://github.com/as595/E2CNNRadGal).
