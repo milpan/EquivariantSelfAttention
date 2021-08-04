@@ -17,3 +17,4 @@ logs/
 runs.sh
 figures/animation_frames
 fisher_configs.txt
+models/
