@@ -191,8 +191,6 @@ def train(net,
     # Save final model
     torch.save(net.state_dict(), f'{folder_name}/last.pt')
     
-    #Calculate Fisher Information
-    fisherinfo = fisher()
     
     output = []
     if output_model:
