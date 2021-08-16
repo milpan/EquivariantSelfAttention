@@ -64,7 +64,14 @@ def load_model(config, load_model='best', path_supliment='', device=torch.device
         MODEL_PATH = config['output']['directory'] +'/'+ path_supliment + str(load_model) + '.pt'
     
     model = globals()[config['model']['base']](**config['model']).to(device)
-    model.load_state_dict(torch.load(MODEL_PATH))
+    pretrained_dict = torch.load(MODEL_PATH)
+    model_dict = model.state_dict()
+    #modified the load_state_dict to allow for skipping layers not in the pt file
+    pretrained_dict = {k: v for k, v in pretrained_dict.items() if (k in model_dict) and (model_dict[k].shape == pretrained_dict[k].shape)}
+    # 2. overwrite entries in the existing state dict
+    model_dict.update(pretrained_dict)
+    model.load_state_dict(model_dict, strict=False)
+    
     model.eval()
     
     return model

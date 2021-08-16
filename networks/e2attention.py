@@ -141,15 +141,16 @@ class DNSteerableAGRadGalNet(nn.Module):
                     self.classifier = nn.Linear(concat_length, n_classes)
                     self.aggregate = self.aggregation_ds
                 elif aggregation_mode == 'ft':
-                    self.classifier = nn.Linear(n_classes*self.ag, n_classes)
+                    self.classifier = nn.Linear(n_classes*self.ag, n_classes) #times4
                     self.aggregate = self.aggregation_ft
                 else:
                     raise NotImplementedError
         else:
-            self.classifier = nn.Linear((150//16)**2*64, n_classes)
+            self.classifier = nn.Linear(((150//16)**2*64), n_classes)
             self.aggregate = lambda x: self.classifier(self.flatten(x))
 
-
+        #Set up random weights for the last classifier layer
+        
         ####################
         # I wonder if I can get away with this? I dont know.
         # initialise weights
@@ -295,7 +296,7 @@ class DNSteerableAGRadGalNet(nn.Module):
                 raise NotImplementedError
             return out
         else:
-            return F.softmax(out,dim=1)
+            return out, F.softmax(out,dim=1)
 
 
 

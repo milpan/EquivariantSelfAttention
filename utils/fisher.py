@@ -100,3 +100,8 @@ def calc_rank(fisher):
         rank = torch.matrix_rank(fishercpu).item()
         Rank.append(rank)
         return Rank;
+    
+def normalise(Fishers):
+    num_samples = len(Fishers)
+    TrF_integral = (1 / num_samples) * np.sum(np.array([torch.trace(F) for F in Fishers]))
+    return [((12) / TrF_integral) * F for F in Fishers]
