@@ -62,3 +62,12 @@ To train a model use the [train.py](train.py) using your config file:
 ```
 python3.8 train.py --config YOUR_CONFIG_NAME.cfg >& logs/YOUR_CONFIG_NAME.log
 ```
+### Fisher Analysis:
+To copy weights over of all layers from two networks, and freeze apart from the last layer use:
+```
+utils.fisher.WeightTransfer(referenceModel, newModel)
+```
+To Initialise the Process of Calculating the FIM and Related Metrics
+```
+Fishers, Rank, FR = utils.fisher.CalcFIM(model, train_loader, n_iterations)
+```
