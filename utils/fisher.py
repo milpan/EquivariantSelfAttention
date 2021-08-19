@@ -77,15 +77,6 @@ def WeightTransfer(referenceModel, newModel):
     newModel.classifier.weight.requires_grad=True
     return;
     
-#Function to generate uniform normal weights for the last fully connected layer
-def GenerateRandomWeights(m):
-        classname = m.__class__.__name__
-        # for every Linear layer in a model..
-        if classname.find('Linear') == 3:
-            # apply a uniform distribution to the weights and a bias=0
-            m.weight.data.uniform_(0.0, 1.0)
-            m.bias.data.fill_(0)
-
 # Make the math imports to calculate metrics related to the Fisher Information, such as the Jacobian/Hessian
 def jacobian(f, w, create_graph=False):   
 
@@ -128,29 +119,33 @@ def CalcFIM(net, train_loader, n_iterations):
         #torch.nn.init.orthogonal_(net.classifier.weight, gain=1.0)
         w = net.classifier.weight
         flat_w = w.view(-1).cpu()
-
-        fisher = torch.zeros((n_weight,n_weight)).to('cuda')
-        for x_n, y_n in train_loader:
-            x_n, y_n = x_n.to('cuda'), y_n.to('cuda')
-            f_n = net(x_n)[0]
-            for row in f_n:
-                pi_n = F.softmax(row, dim=0)
-                diag_pi_n = torch.diag(pi_n.squeeze(0)).to('cuda')
-                pi_n_pi_n_T= torch.from_numpy(np.outer(pi_n.cpu().detach().numpy(),pi_n.cpu().detach().numpy())).to('cuda')
-                J_f = jacobian((torch.squeeze(row,0)),w)
-                J_f_T = J_f.permute(1,0)
-                K2 = diag_pi_n-pi_n_pi_n_T
-                K3 = K2.cuda()
-                fisher += torch.matmul((torch.matmul(J_f_T,K3)),J_f)
-                
-        with torch.no_grad():
-            rank = torch.matrix_rank(fisher).item()
-            Rank.append(rank)
-            realisations_torch[i] = fisher.cpu()
-            Fw = np.matmul(fisher.cpu().numpy(),flat_w)
-            wFw = np.dot(flat_w,Fw)
-            FR.append(wFw)
+        try:
+            fisher = torch.zeros((n_weight,n_weight)).to('cuda')
+            for x_n, y_n in train_loader:
+                x_n, y_n = x_n.to('cuda'), y_n.to('cuda')
+                f_n = net(x_n)[0]
+                for row in f_n:
+                    pi_n = F.softmax(row, dim=0)
+                    diag_pi_n = torch.diag(pi_n.squeeze(0)).to('cuda')
+                    pi_n_pi_n_T= torch.from_numpy(np.outer(pi_n.cpu().detach().numpy(),pi_n.cpu().detach().numpy())).to('cuda')
+                    J_f = jacobian((torch.squeeze(row,0)),w)
+                    J_f_T = J_f.permute(1,0)
+                    K2 = diag_pi_n-pi_n_pi_n_T
+                    K3 = K2.cuda()
+                    fisher += torch.matmul((torch.matmul(J_f_T,K3)),J_f)
+        except:
+            print("\n A fisher failed to be realised, skipping...")
             
+        try:        
+            with torch.no_grad():
+                rank = torch.matrix_rank(fisher).item()
+                Rank.append(rank)
+                realisations_torch[i] = fisher.cpu()
+                Fw = np.matmul(fisher.cpu().numpy(),flat_w)
+                wFw = np.dot(flat_w,Fw)
+                FR.append(wFw)
+        except:
+            print("Error occured when trying to calculate Rank, skipping...")
     return realisations_torch, Rank, FR;
 
 def Hessian(y, x):
