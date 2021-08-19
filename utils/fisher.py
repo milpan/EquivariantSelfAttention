@@ -113,10 +113,10 @@ def CalcFIM(net, train_loader, n_iterations):
     n_weight = 12
     realisations_torch = torch.zeros((Number_of_FisherIts,n_weight,n_weight)).to(device) #All fishers
     for i in tqdm(range(Number_of_FisherIts)):
-        torch.nn.init.uniform_(net.classifier.weight, -1., 1.)
+        #torch.nn.init.uniform_(net.classifier.weight, -1., 1.)
         #torch.nn.init.xavier_uniform_(net.classifier.weight, gain=1.0)
         #torch.nn.init.kaiming_normal(net.classifier.weight)
-        #torch.nn.init.orthogonal_(net.classifier.weight, gain=1.0)
+        torch.nn.init.orthogonal_(net.classifier.weight, gain=1.0)
         w = net.classifier.weight
         flat_w = w.view(-1).cpu()
         try:
