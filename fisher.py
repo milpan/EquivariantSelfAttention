@@ -22,7 +22,7 @@ from datasets import FRDEEPF
 from datasets import MiraBest_full, MBFRConfident, MBFRUncertain, MBHybrid
 from datasets import MingoLoTSS, MLFR, MLFRTest
 import torch.nn.functional as F
-
+import pickle
 
 args        = utils.parse_args()
 print(args)
@@ -64,6 +64,9 @@ model = utils.utils.load_model(config, load_model='best', device=device, path_su
 
 utils.fisher.WeightTransfer(model, net)
 Fishers, Rank, FR = utils.fisher.CalcFIM(net, train_loader, n_iterations)
+
+print("Saving Fisher Realisations to a Pickle File...")
+pickle.dump(Fishers, open(f"{workingdir}/fishers.p", "wb"))
 
 EV =[]
 nbins = 8
