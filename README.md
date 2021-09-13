@@ -67,7 +67,7 @@ To copy weights over of all layers from two networks, and freeze apart from the 
 ```
 utils.fisher.WeightTransfer(referenceModel, newModel)
 ```
-To Initialise the Process of Calculating the FIM and Related Metrics
+To Initialise the Process of Calculating the FIM and Related Metrics (for Emperical Fisher use approximation=emperical)
 ```
-Fishers, Rank, FR = utils.fisher.CalcFIM(model, train_loader, n_iterations)
+Fishers, Rank, FR = utils.fisher.CalcFIM(model, train_loader, n_iterations, approximation=None)
 ```
