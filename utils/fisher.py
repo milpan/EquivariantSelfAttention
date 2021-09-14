@@ -158,7 +158,7 @@ def CalcFIM(net, train_loader, n_iterations, approximation=None):
                     wFw = np.dot(flat_w,Fw)
                     FR.append(wFw)
                 except:
-                    print("Discarding a Rank Calculation")
+                    pass;
     return realisations_torch, Rank, FR;
 
 

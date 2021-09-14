@@ -25,7 +25,6 @@ import torch.nn.functional as F
 import pickle
 
 args        = utils.parse_args()
-print(args)
 config_name = args['config']
 try:
     n_iterations = int(args['iterations'])
@@ -63,6 +62,7 @@ path_supliment = config['data']['augment']+'/'
 model = utils.utils.load_model(config, load_model='best', device=device, path_supliment=path_supliment)
 
 utils.fisher.WeightTransfer(model, net)
+del(model)
 Fishers, Rank, FR = utils.fisher.CalcFIM(net, train_loader, n_iterations)
 
 print("Saving Fisher Realisations to a Pickle File...")
@@ -74,7 +74,7 @@ plt.subplot(111)
 #normalise fisher
 normalised_fishers = utils.fisher.normalise(Fishers.cpu())
 #Save Plots of the Eigenvalues, Rank and FR Norm to the relevant model
-for i in normalised_fishers:
+for i in Fishers:
     EV = np.append(EV,torch.eig(i, eigenvectors=False,  out=None)[0][:,0].detach().numpy())
     
 plt.hist(EV, bins=nbins, rwidth=0.8, color='r')
@@ -87,8 +87,8 @@ plt.close()
 
 plt.subplot(111)
 
-plt.hist(Rank, bins=nbins, rwidth=0.8, color='g')
-plt.ylabel("Total Counts")
+plt.hist(Rank, bins=nbins, rwidth=0.8, color='g', density=True)
+plt.ylabel("Normalised Counts")
 plt.xlabel("Matrix Rank")
 plt.title("Fisher Matrix Rank Distribution")
 MeanRank = np.mean(Rank)
@@ -99,8 +99,17 @@ plt.close()
 plt.subplot(111)
 
 FR2 = [np.abs(e) for e in FR]
-plt.hist(FR2, bins=nbins, rwidth = 0.8 ,color='b')
-plt.ylabel("Total Counts")
+plt.hist(FR2, bins=nbins, rwidth = 0.8 ,color='b', density=True)
+plt.ylabel("Normalised Counts")
 plt.xlabel("Fisher Rao Norm")
 plt.title("Fisher Rao Norm Distribution")
 plt.savefig(f"{workingdir}/FRNorm.png")
+
+#----Calculate Effective Dimension Metrics----#
+#Normalise the Fisher Matrix
+ed = []
+n_samples = [i for i in range(100,10000000,100)]
+ed = effective_dimension(net,normalised_fishers, 2, n_samples, 12)
+d = {"Samples": n_samples, "ED": np.array([x/12 for x in ed])}
+pickle.dump(d, open(f"{workingdir}/effd.p", "wb"))
+plt.plot(d['Samples'], d['ED'])
